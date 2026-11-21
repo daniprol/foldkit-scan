@@ -1,5 +1,6 @@
 import { defineConfig } from 'astro/config'
 import { fileURLToPath } from 'node:url'
+import starlightThemeBlack from 'starlight-theme-black'
 import starlightTypeDoc, { typeDocSidebarGroup } from 'starlight-typedoc'
 
 import starlight from '@astrojs/starlight'
@@ -47,6 +48,8 @@ export default defineConfig({
     starlight({
       title: 'foldkit-scan',
       description: 'See what re-renders in your Foldkit app, and why.',
+      // The Black theme shows a small square mark next to the title.
+      logo: { src: './src/assets/logo-mark.svg' },
       social: [
         {
           icon: 'github',
@@ -58,6 +61,7 @@ export default defineConfig({
         baseUrl: 'https://github.com/daniprol/foldkit-scan/edit/main/docs/',
       },
       plugins: [
+        starlightThemeBlack({}),
         starlightTypeDoc({
           entryPoints: ['../src/index.ts'],
           tsconfig: './tsconfig.typedoc.json',
