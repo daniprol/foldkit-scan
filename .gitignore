@@ -1,0 +1,8 @@
+node_modules/
+dist/
+site/
+coverage/
+.vitest-attachments/
+__screenshots__/
+*.log
+.DS_Store
