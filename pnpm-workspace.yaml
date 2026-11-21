@@ -1,0 +1,10 @@
+# pnpm 11+ keeps its settings here, even for a single package.
+# There is no "packages:" list yet, so this repo is one package.
+
+# Wait one day before installing a brand-new release (supply-chain safety).
+# 1440 minutes is already the default. Writing it down makes it visible.
+minimumReleaseAge: 1440
+
+# pnpm blocks dependency install scripts unless they are listed here.
+# Add an entry only when `pnpm install` names a package and asks.
+allowBuilds: {}

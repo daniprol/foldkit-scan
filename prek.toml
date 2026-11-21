@@ -1,0 +1,51 @@
+# Run `pnpm exec prek install` once after cloning.
+default_install_hook_types = ["pre-commit", "pre-push"]
+exclude = '^(dist|repos|site)/'
+
+# Small hygiene checks built into prek. No download, no Python.
+[[repos]]
+repo = "builtin"
+hooks = [
+  { id = "trailing-whitespace" },
+  { id = "end-of-file-fixer" },
+  { id = "check-merge-conflict" },
+  { id = "check-added-large-files" },
+  { id = "detect-private-key" },
+]
+
+[[repos]]
+repo = "local"
+
+# On commit: only the staged files, so it takes about a second.
+[[repos.hooks]]
+id = "oxfmt"
+name = "format (oxfmt)"
+language = "system"
+entry = "pnpm exec oxfmt"
+files = '\.(ts|js|mjs|json)$'
+
+[[repos.hooks]]
+id = "oxlint"
+name = "lint (oxlint)"
+language = "system"
+entry = "pnpm exec oxlint"
+files = '\.(ts|js|mjs)$'
+
+# On push: whole-project checks that need types.
+[[repos.hooks]]
+id = "typecheck"
+name = "typecheck + Effect diagnostics"
+language = "system"
+entry = "pnpm typecheck"
+pass_filenames = false
+always_run = true
+stages = ["pre-push"]
+
+[[repos.hooks]]
+id = "unit-tests"
+name = "unit tests"
+language = "system"
+entry = "pnpm exec vitest run --project unit --project example"
+pass_filenames = false
+always_run = true
+stages = ["pre-push"]

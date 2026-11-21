@@ -1,0 +1,72 @@
+{
+  "name": "foldkit-scan",
+  "version": "0.0.0",
+  "description": "See what re-renders in your Foldkit app, and why.",
+  "license": "MIT",
+  "type": "module",
+  "sideEffects": false,
+  "packageManager": "pnpm@12.21.0",
+  "files": [
+    "dist"
+  ],
+  "exports": {
+    ".": {
+      "types": "./dist/index.d.ts",
+      "default": "./dist/index.js"
+    },
+    "./vite": {
+      "types": "./dist/vite.d.ts",
+      "default": "./dist/vite.js"
+    },
+    "./package.json": "./package.json"
+  },
+  "scripts": {
+    "dev": "vite example",
+    "build": "tsdown",
+    "test": "vitest run",
+    "test:watch": "vitest",
+    "typecheck": "effect-tsgo tsc --noEmit && effect-tsgo tsc -p example --noEmit",
+    "lint": "oxlint && effect-tsgo oxlint --config .oxlintrc.effect.json --deny-warnings src example/src",
+    "format": "oxfmt",
+    "format:check": "oxfmt --check",
+    "check": "pnpm format:check && pnpm lint && pnpm typecheck && pnpm test && pnpm build",
+    "docs": "uvx zensical@0.1.3 serve",
+    "changeset": "changeset",
+    "release": "pnpm build && changeset publish"
+  },
+  "peerDependencies": {
+    "effect": "~4.1.0",
+    "foldkit": ">=0.171.0",
+    "vite": "^8.0.0"
+  },
+  "peerDependenciesMeta": {
+    "vite": {
+      "optional": true
+    }
+  },
+  "devDependencies": {
+    "@arethetypeswrong/core": "^0.18.5",
+    "@changesets/changelog-github": "^1.0.1",
+    "@changesets/cli": "^3.0.3",
+    "@effect/platform-browser": "4.1.5",
+    "@effect/tsgo": "0.73.2",
+    "@effect/vitest": "4.1.5",
+    "@foldkit/devtools": "0.171.0",
+    "@foldkit/oxlint-plugin": "0.15.4",
+    "@foldkit/vite-plugin": "0.29.1",
+    "@j178/prek": "0.5.11",
+    "@vitest/browser-playwright": "5.1.1",
+    "effect": "4.1.5",
+    "foldkit": "0.171.0",
+    "happy-dom": "^20.14.5",
+    "oxfmt": "0.79.0",
+    "oxlint": "1.94.0",
+    "oxlint-tsgolint": "7.0.2007",
+    "playwright": "1.65.1",
+    "publint": "^0.3.25",
+    "tsdown": "0.23.7",
+    "typescript": "7.0.2",
+    "vite": "^8.3.8",
+    "vitest": "5.1.1"
+  }
+}
