@@ -1,6 +1,7 @@
 # Run `pnpm exec prek install` once after cloning.
 default_install_hook_types = ["pre-commit", "pre-push"]
-exclude = '^(dist|repos|site)/'
+# patches/ holds pnpm patches, whose diff context lines must stay byte-exact.
+exclude = '^(dist|repos|site|patches)/'
 
 # Small hygiene checks built into prek. No download, no Python.
 [[repos]]

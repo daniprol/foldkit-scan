@@ -50,6 +50,7 @@ export default defineConfig({
       description: 'See what re-renders in your Foldkit app, and why.',
       // The Black theme shows a small square mark next to the title.
       logo: { src: './src/assets/logo-mark.svg' },
+      customCss: ['./src/styles/custom.css'],
       social: [
         {
           icon: 'github',
