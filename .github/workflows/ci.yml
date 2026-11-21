@@ -31,3 +31,7 @@ jobs:
 
       # Build also runs publint and attw.
       - run: pnpm build
+
+      # The docs site, with its API reference and live demo, so a PR
+      # cannot break the Pages deploy.
+      - run: pnpm --filter docs build

@@ -1,0 +1,42 @@
+---
+title: foldkit-scan
+description: See what re-renders in your Foldkit app, and why.
+template: splash
+hero:
+  tagline: See what re-renders in your Foldkit app, and why.
+  actions:
+    - text: Quickstart
+      link: /foldkit-scan/quickstart/
+      icon: right-arrow
+    - text: Try the live demo
+      link: /foldkit-scan/demo/
+      variant: minimal
+---
+
+foldkit-scan is a dev-time overlay for [Foldkit](https://github.com/foldkit/foldkit) apps, in the spirit of [react-scan](https://github.com/aidenybai/react-scan).
+
+## Why
+
+A Foldkit app re-renders when `update` returns a new Model. That's simple, and it's also how apps get slow without anyone noticing:
+
+- an `update` copies the Model when nothing changed,
+- a lazy view gets a fresh object every render and never hits,
+- a keyed list is keyed by position, so every row is rebuilt.
+
+None of these show up as errors. foldkit-scan makes them visible.
+
+## What you get
+
+- **Flashes** on every part of the page a patch touched, named after the view function and the Message that caused it.
+- **Timings** for every frame: update, view and patch, from Foldkit's own `slow` hook.
+- **Issues** for the usual suspects, each with a fix.
+- **Nothing in production.** With `enabled: false`, every helper is a plain pass-through.
+
+```ts
+const scan = Scan.make<Model, Message>({
+  enabled: import.meta.env.DEV,
+  container,
+})
+```
+
+[Get started](/foldkit-scan/quickstart/) or [click around the demo](/foldkit-scan/demo/).

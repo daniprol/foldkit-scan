@@ -79,6 +79,10 @@ Agents that drive a browser can also call `window.__FOLDKIT_SCAN__.report()`.
 
 **DevTools link (experimental).** `foldkitScan({ experimentalDevToolsLink: true })` adds a button to each frame that pauses Foldkit DevTools on its Message. It relies on a Foldkit internal, so it may break on an upgrade.
 
+## Docs
+
+Guide, API reference and a live demo: **[daniprol.github.io/foldkit-scan](https://daniprol.github.io/foldkit-scan/)**
+
 ## Try it
 
 The [example](example/) is a small task list with three performance bugs planted on purpose. Switch them on and off and watch the panel. "Add 1,000" makes the page big, "Save" runs a Command, and `?scan=off` in the URL turns foldkit-scan off to compare.

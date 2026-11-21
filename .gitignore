@@ -6,3 +6,8 @@ coverage/
 __screenshots__/
 *.log
 .DS_Store
+
+# Docs site: build output, Astro's cache and the generated API reference.
+docs/dist/
+docs/.astro/
+docs/src/content/docs/api/

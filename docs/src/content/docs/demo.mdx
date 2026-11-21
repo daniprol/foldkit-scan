@@ -1,0 +1,19 @@
+---
+title: Live demo
+description: The example task list with foldkit-scan running. Click around.
+tableOfContents: false
+---
+
+import DemoFrame from '../../components/DemoFrame.astro'
+
+This is the repo's [example app](https://github.com/daniprol/foldkit-scan/tree/main/example): a task list with three performance bugs, all switched on.
+
+Try this:
+
+1. **Watch the footer.** A clock ticks every second, so it flashes violet.
+2. **Type in the filter.** Rows below a hidden one flash with orange dashes. They were rebuilt, because their key includes their index.
+3. **Click a row**, then press <kbd>Alt</kbd>+<kbd>Shift</kbd>+<kbd>C</kbd> and point at a row. Its lazy slot misses every time: one argument is a new object each render.
+4. **Open the pill** in the bottom-left corner. The Issues tab names all three bugs, with fixes.
+5. **Untick a bug.** Its issue stops repeating.
+
+<DemoFrame />
