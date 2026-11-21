@@ -9,7 +9,8 @@ hooks = [
   { id = "trailing-whitespace" },
   { id = "end-of-file-fixer" },
   { id = "check-merge-conflict" },
-  { id = "check-added-large-files" },
+  # The README demo GIF is about 1.7 MB.
+  { id = "check-added-large-files", args = ["--maxkb=2048"] },
   { id = "detect-private-key" },
 ]
 
