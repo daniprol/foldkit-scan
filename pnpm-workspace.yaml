@@ -1,5 +1,9 @@
-# pnpm 11+ keeps its settings here, even for a single package.
-# There is no "packages:" list yet, so this repo is one package.
+# pnpm 11+ keeps its settings here.
+# The library is the root package. The docs site is a second package, so it
+# can use TypeScript 6 (TypeDoc needs its compiler API) while the root stays
+# on TypeScript 7.
+packages:
+  - docs
 
 # Wait one day before installing a brand-new release (supply-chain safety).
 # 1440 minutes is already the default. Writing it down makes it visible.
