@@ -7,7 +7,14 @@ import type {
   Settings,
 } from '../settings'
 import { PHASE_BUDGETS_MS } from '../slow'
-import type { FrameRecord, Hotspot, Issue, IssueKind, LazyStat } from '../types'
+import type {
+  CommandRecord,
+  FrameRecord,
+  Hotspot,
+  Issue,
+  IssueKind,
+  LazyStat,
+} from '../types'
 import { type Child, compact, el, ms } from './el'
 
 // The panel that opens above the pill. Each tab is a small function from
@@ -24,6 +31,11 @@ export type PanelData = Readonly<{
   hotspotsByView: ReadonlyArray<Hotspot>
   hotspotsByMessage: ReadonlyArray<Hotspot>
   lazyStats: ReadonlyArray<LazyStat>
+  /** Recent Commands, oldest first. */
+  commands: ReadonlyArray<CommandRecord>
+  commandsByName: ReadonlyArray<Hotspot>
+  /** `true` when the experimental DevTools link found the DevTools store. */
+  isDevToolsLinked: boolean
 }>
 
 export type PanelActions = Readonly<{
@@ -38,6 +50,7 @@ export type PanelActions = Readonly<{
   ignoreMessage: (tag: string) => void
   dismissIssue: (id: string) => void
   resetStats: () => void
+  openInDevTools: (historyIndex: number) => void
 }>
 
 const SVG = 'http://www.w3.org/2000/svg'
@@ -67,10 +80,25 @@ const segmented = <A extends string>(
 
 // ---- Frames tab ----
 
+/** Commands that started after the previous frame and before this one.
+ *  Foldkit starts a Command right after the `update` that returned it, and
+ *  renders on the next animation frame, so these came from this frame's
+ *  Messages. */
+const commandsOf = (
+  frames: ReadonlyArray<FrameRecord>,
+  frame: FrameRecord,
+  commands: ReadonlyArray<CommandRecord>,
+): ReadonlyArray<CommandRecord> => {
+  const index = frames.indexOf(frame)
+  const from = index > 0 ? (frames[index - 1]?.at ?? -Infinity) : -Infinity
+  return commands.filter(c => c.startedAt > from && c.startedAt <= frame.at)
+}
+
 /** One bar per frame: height is time, colour is the update, view and patch
  *  split. A dashed line marks one 60 fps frame. */
 const timeline = (
   frames: ReadonlyArray<FrameRecord>,
+  commands: ReadonlyArray<CommandRecord>,
   selectedId: number | undefined,
   onSelect: (id: number) => void,
 ): SVGSVGElement => {
@@ -147,6 +175,22 @@ const timeline = (
           }),
         )
       }
+    }
+    // The Command lane: a tick on top of frames whose Messages started
+    // Commands. Red when one of them failed.
+    const started = commandsOf(frames, frame, commands)
+    if (started.length > 0) {
+      group.append(
+        rect({
+          x,
+          y: 0,
+          width: barWidth - 1,
+          height: 3,
+          fill: started.some(c => c.outcome === 'Failure')
+            ? '#f38ba8'
+            : '#94e2d5',
+        }),
+      )
     }
     if (frame.id === selectedId) {
       group.append(
@@ -229,9 +273,10 @@ const framesTab = (
   }
 
   const slowestUpdate = Math.max(0, ...frame.messages.map(m => m.updateMs))
+  const frameCommands = commandsOf(live, frame, data.commands)
 
   return [
-    timeline(live, frame.id, actions.selectFrame),
+    timeline(live, data.commands, frame.id, actions.selectFrame),
     el('div', { class: 'axis' }, [
       el('span', {
         text: `last ${Math.min(live.length, TIMELINE_FRAMES)} frames`,
@@ -254,6 +299,22 @@ const framesTab = (
         el('span', { class: 'tag-replay', text: 'DevTools replay' }),
       el('span', { class: 'total', text: ms(frame.totalMs) }),
     ]),
+    data.isDevToolsLinked &&
+      frame.historyIndex !== undefined &&
+      frame.historyIndex >= 0 &&
+      el('button', {
+        class: 'mini devtools',
+        text: 'Show this Message in DevTools',
+        title: `DevTools history entry ${frame.historyIndex}`,
+        attrs: { 'data-key': 'open-devtools' },
+        on: {
+          click: () => {
+            if (frame.historyIndex !== undefined) {
+              actions.openInDevTools(frame.historyIndex)
+            }
+          },
+        },
+      }),
     !frame.isReplay &&
       phaseRow('update', slowestUpdate, PHASE_BUDGETS_MS.Update, 'u'),
     !frame.isReplay &&
@@ -286,6 +347,25 @@ const framesTab = (
           ]),
         ),
       ),
+    frameCommands.length > 0 && el('div', { class: 'h', text: 'Commands' }),
+    frameCommands.length > 0 &&
+      el(
+        'ul',
+        { class: 'list' },
+        frameCommands.slice(-20).map(command =>
+          el('li', {}, [
+            el('span', { class: 'tag', text: command.name }),
+            el('span', {
+              class: command.outcome === 'Failure' ? 'no failed' : 'yes',
+              text: commandResult(command),
+            }),
+            el('em', {
+              text:
+                command.durationMs === undefined ? '…' : ms(command.durationMs),
+            }),
+          ]),
+        ),
+      ),
     el('div', { class: 'h', text: 'DOM changes' }),
     changesByLabel.size === 0
       ? el('p', { class: 'muted', text: 'Nothing on the page changed.' })
@@ -309,6 +389,19 @@ const framesTab = (
           ),
         ),
   ]
+}
+
+const commandResult = (command: CommandRecord): string => {
+  switch (command.outcome) {
+    case 'Running':
+      return 'running'
+    case 'Success':
+      return command.resultTag === undefined ? 'done' : `→ ${command.resultTag}`
+    case 'Failure':
+      return 'failed'
+    case 'Interrupted':
+      return 'interrupted'
+  }
 }
 
 // ---- Issues tab ----
@@ -422,6 +515,25 @@ const hotspotsTab = (data: PanelData): ReadonlyArray<Child> => [
               }),
           ])
         }),
+      ),
+  el('div', { class: 'h', text: 'Slowest Commands' }),
+  data.commandsByName.length === 0
+    ? el('p', {
+        class: 'muted',
+        text: 'Pass resources: scan.resources to Foldkit to see Commands.',
+      })
+    : el(
+        'ul',
+        { class: 'list' },
+        data.commandsByName
+          .slice(0, 8)
+          .map(row =>
+            el('li', {}, [
+              el('span', { class: 'label', text: row.name }),
+              el('span', { class: 'kind', text: `${row.count}×` }),
+              el('em', { text: `${ms(row.totalMs / row.count)} avg` }),
+            ]),
+          ),
       ),
 ]
 

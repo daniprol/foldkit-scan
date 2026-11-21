@@ -1,3 +1,5 @@
+import type { CommandTracker } from '../commands'
+import type { DevToolsLink } from '../devtools'
 import type { FrameBuilder } from '../frames'
 import type { Hotspots } from '../hotspots'
 import type { IssueTracker } from '../issues'
@@ -43,6 +45,8 @@ export type OverlayInput = Readonly<{
   issues: IssueTracker
   hotspots: Hotspots
   lazy: LazyTracker
+  commands: CommandTracker
+  devTools: DevToolsLink
   labelFor: (node: Node) => string
   settings: () => Settings
   updateSettings: (patch: Partial<Settings>) => void
@@ -224,8 +228,13 @@ export const makeOverlay = (input: OverlayInput): Overlay => {
       issues.reset()
       hotspots.reset()
       lazy.reset()
+      input.commands.reset()
       selectedFrameId = undefined
       refresh()
+    },
+    openInDevTools: index => {
+      input.devTools.jumpTo(index)
+      showToast('Paused DevTools on this Message')
     },
   }
 
@@ -269,6 +278,9 @@ export const makeOverlay = (input: OverlayInput): Overlay => {
     hotspotsByView: hotspots.byView(),
     hotspotsByMessage: hotspots.byMessage(),
     lazyStats: lazy.stats(),
+    commands: input.commands.recent(),
+    commandsByName: input.commands.byName(),
+    isDevToolsLinked: input.devTools.isLinked(),
   })
 
   let refreshTimer = 0

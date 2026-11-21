@@ -1,7 +1,10 @@
+import { Layer, Tracer } from 'effect'
 import type { Runtime } from 'foldkit'
 import { DEVTOOLS_HOST_ID } from 'foldkit/devtools-host'
 import type { Document, HtmlBuilder } from 'foldkit/html'
 
+import { makeCommandTracker } from './commands'
+import { makeDevToolsLink } from './devtools'
 import { type DomWatcher, makeDomWatcher } from './dom'
 import { type FrameListener, makeFrameBuilder } from './frames'
 import { makeHotspots } from './hotspots'
@@ -9,9 +12,16 @@ import { makeIdentities } from './identity'
 import { makeIssueTracker } from './issues'
 import { type KeyedLazySlot, type LazySlot, makeLazyTracker } from './lazy'
 import { OVERLAY_HOST_ID, type Overlay, makeOverlay } from './overlay/overlay'
+import { makePerformanceTrack } from './performanceTrack'
 import { type Settings, loadSettings, saveSettings } from './settings'
 import { makeSlowConfig } from './slow'
-import type { FrameRecord, Issue, LazyStat, Report } from './types'
+import type {
+  CommandRecord,
+  FrameRecord,
+  Issue,
+  LazyStat,
+  Report,
+} from './types'
 
 export type ScanOptions = Readonly<{
   /** Turn foldkit-scan on. When `false`, every helper is a plain
@@ -35,6 +45,12 @@ export type ScanOptions = Readonly<{
   forwardSlowWarnings?: boolean
   /** How many recent frames to keep. Defaults to 120. */
   maxFrames?: number
+  /** Draw update, view, patch and Commands on their own tracks in Chrome's
+   *  Performance panel. Defaults to `true`. */
+  performanceTrack?: boolean
+  /** A Tracer you already use, for example to send spans to OpenTelemetry.
+   *  `scan.resources` passes every span on to it. */
+  tracer?: Tracer.Tracer
 }>
 
 type View<Model, Message> = (model: Model, h: HtmlBuilder<Message>) => Document
@@ -51,6 +67,12 @@ export type Scan<Model, Message> = Readonly<{
   lazy: (name: string, slot: LazySlot) => LazySlot
   /** Wrap a `createKeyedLazy()` slot, for lists. */
   keyedLazy: (name: string, slot: KeyedLazySlot) => KeyedLazySlot
+  /** Pass as `resources` to see Commands: `resources: scan.resources`. If
+   *  you already have resources, merge them:
+   *  `Layer.merge(AppResources, scan.resources)`. */
+  resources: Layer.Layer<never>
+  /** Recent Commands, oldest first. Empty without `scan.resources`. */
+  commands: () => ReadonlyArray<CommandRecord>
   /** Called with every finished frame. Returns a function that stops it. */
   subscribe: (listener: FrameListener) => () => void
   /** The most recent frames, oldest first. */
@@ -80,6 +102,8 @@ const makeDisabled = <Model, Message>(): Scan<Model, Message> => ({
   view: view => view,
   lazy: (_name, slot) => slot,
   keyedLazy: (_name, slot) => slot,
+  resources: Layer.empty,
+  commands: () => [],
   subscribe: () => () => {},
   frames: () => [],
   issues: () => [],
@@ -90,6 +114,7 @@ const makeDisabled = <Model, Message>(): Scan<Model, Message> => ({
     hotspots: { byView: [], byMessage: [] },
     lazy: [],
     issues: [],
+    commands: [],
   }),
   dispose: () => {},
 })
@@ -119,6 +144,10 @@ export const make = <Model, Message>(
     onChange: () => overlay?.refresh(),
   })
   const lazy = makeLazyTracker(issues.observeUnstableLazy)
+  const commands = makeCommandTracker()
+  const devTools = makeDevToolsLink()
+  const track =
+    options.performanceTrack === false ? undefined : makePerformanceTrack()
 
   // The latest view result, kept by `scan.view`.
   let lastBody: Document['body'] | undefined
@@ -138,6 +167,7 @@ export const make = <Model, Message>(
   const frames = makeFrameBuilder({
     maxFrames: options.maxFrames ?? 120,
     takeDomChanges: () => domWatcher?.takeChanges() ?? [],
+    historyIndex: devTools.latestIndex,
   })
 
   if (options.container != null) {
@@ -160,17 +190,20 @@ export const make = <Model, Message>(
       onMessage: message => {
         if (!ignoredAtRuntime.has(message.leafTag)) {
           frames.addMessage(message)
+          track?.update(message.tag, message.updateMs, message.isEqualInValue)
         }
       },
       onView: durationMs => {
         lazy.commitRender()
         frames.setViewMs(durationMs)
+        track?.view(durationMs)
       },
       onPatch: durationMs => {
         // After the patch every vnode knows its DOM node, so this is the
         // moment to learn the names of the elements.
         identities.index(lastBody)
         lazy.afterPatch()
+        track?.patch(durationMs)
         frames.closeFrame(durationMs)
       },
     },
@@ -189,6 +222,8 @@ export const make = <Model, Message>(
           issues,
           hotspots,
           lazy,
+          commands,
+          devTools,
           labelFor: identities.labelFor,
           settings: () => settings,
           updateSettings,
@@ -200,6 +235,9 @@ export const make = <Model, Message>(
   const stopObserving = frames.subscribe(frame => {
     hotspots.observeFrame(frame)
     issues.observeFrame(frame)
+  })
+  const stopTracking = commands.subscribe(command => {
+    track?.command(command)
   })
 
   const report = (): Report => ({
@@ -218,12 +256,27 @@ export const make = <Model, Message>(
       changes: frame.changes.map(({ kind, label }) => ({ kind, label })),
       isWasted: frame.isWasted,
       isReplay: frame.isReplay,
+      ...(frame.historyIndex === undefined
+        ? {}
+        : { historyIndex: frame.historyIndex }),
     })),
     hotspots: { byView: hotspots.byView(), byMessage: hotspots.byMessage() },
     lazy: lazy.stats(),
     issues: issues
       .issues()
       .map(({ lastSeenAt: _lastSeenAt, ...issue }) => issue),
+    commands: commands.recent().map(command => ({
+      name: command.name,
+      startedAt: command.startedAt,
+      outcome: command.outcome,
+      // JSON has no `undefined`, so leave the keys out instead.
+      ...(command.durationMs === undefined
+        ? {}
+        : { durationMs: command.durationMs }),
+      ...(command.resultTag === undefined
+        ? {}
+        : { resultTag: command.resultTag }),
+    })),
   })
 
   // Browser-automation agents (Playwright, Chrome) can read this.
@@ -240,6 +293,10 @@ export const make = <Model, Message>(
     },
     lazy: lazy.wrap,
     keyedLazy: lazy.wrapKeyed,
+    // Foldkit runs each Command in a span. Providing our Tracer through
+    // `resources` is how we see them.
+    resources: Layer.succeed(Tracer.Tracer)(commands.tracer(options.tracer)),
+    commands: commands.recent,
     subscribe: frames.subscribe,
     frames: frames.recentFrames,
     issues: issues.issues,
@@ -247,6 +304,7 @@ export const make = <Model, Message>(
     report,
     dispose: () => {
       stopObserving()
+      stopTracking()
       domWatcher?.dispose()
       overlay?.dispose()
       if (Reflect.get(window, '__FOLDKIT_SCAN__') === globalHandle) {
