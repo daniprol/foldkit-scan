@@ -12,3 +12,6 @@ minimumReleaseAge: 1440
 # pnpm blocks dependency install scripts unless they are listed here.
 # Add an entry only when `pnpm install` names a package and asks.
 allowBuilds: {}
+
+patchedDependencies:
+  starlight-theme-black@0.7.2: patches/starlight-theme-black@0.7.2.patch

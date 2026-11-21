@@ -1,0 +1,74 @@
+diff --git a/components/MobileNav.astro b/components/MobileNav.astro
+index 063d598d769dbf5fd7defe6bdeb3b6b2cff39a3e..830786aa44e78a9df13f3f5ae9b9375aeb3271e3 100644
+--- a/components/MobileNav.astro
++++ b/components/MobileNav.astro
+@@ -4,6 +4,18 @@ const { sidebar } = Astro.locals.starlightRoute
+ 
+ const currentPath = Astro.url.pathname
+ const navLinks = await getNavbarLinks(Astro.currentLocale)
++
++// Patched: top-level sidebar links go in the first section, and links in
++// nested groups are listed under the nested group's label.
++type Entry = (typeof sidebar)[number]
++type Row = { kind: 'link'; entry: Extract<Entry, { type: 'link' }> } | { kind: 'label'; label: string }
++const topLinks = sidebar.filter((entry): entry is Extract<Entry, { type: 'link' }> => entry.type === 'link')
++const flatten = (entries: Entry[], path: string[] = []): Row[] =>
++  entries.flatMap((entry): Row[] =>
++    entry.type === 'link'
++      ? [{ kind: 'link', entry }]
++      : [{ kind: 'label', label: [...path, entry.label].join(' / ') }, ...flatten(entry.entries, [...path, entry.label])],
++  )
+ ---
+ 
+ <div class="mobile-nav">
+@@ -19,6 +31,13 @@ const navLinks = await getNavbarLinks(Astro.currentLocale)
+             </a>
+           ))
+         }
++        {
++          topLinks.map((link) => (
++            <a href={link.href} {...link.attrs} data-active={currentPath === link.href}>
++              {link.label}
++            </a>
++          ))
++        }
+       </div>
+     </div>
+ 
+@@ -29,13 +48,14 @@ const navLinks = await getNavbarLinks(Astro.currentLocale)
+             <div class="mobile-nav-section">
+               <div class="mobile-nav-label">{entry.label}</div>
+               <div class="mobile-nav-links">
+-                {entry.entries.map(
+-                  (link) =>
+-                    link.type === 'link' && (
+-                      <a href={link.href} {...link.attrs} data-active={currentPath === link.href}>
+-                        {link.label}
+-                      </a>
+-                    ),
++                {flatten(entry.entries).map((row) =>
++                  row.kind === 'link' ? (
++                    <a href={row.entry.href} {...row.entry.attrs} data-active={currentPath === row.entry.href}>
++                      {row.entry.label}
++                    </a>
++                  ) : (
++                    <div class="mobile-nav-sublabel">{row.label}</div>
++                  ),
+                 )}
+               </div>
+             </div>
+@@ -91,6 +111,14 @@ const navLinks = await getNavbarLinks(Astro.currentLocale)
+     color: var(--muted-foreground);
+   }
+ 
++  .mobile-nav-sublabel {
++    font-size: 0.75rem;
++    line-height: 1rem;
++    font-weight: 500;
++    color: var(--muted-foreground);
++    margin-top: 0.5rem;
++  }
++
+   .mobile-nav-links {
+     display: flex;
+     flex-direction: column;
