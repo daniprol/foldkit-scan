@@ -1,0 +1,12 @@
+{
+  "extends": "../tsconfig.json",
+  "compilerOptions": {
+    "types": ["vite/client"],
+    "isolatedDeclarations": false,
+    "declaration": false,
+    "paths": {
+      "foldkit-scan": ["../src/index.ts"]
+    }
+  },
+  "include": ["src"]
+}

@@ -1,0 +1,44 @@
+{
+  "$schema": "./node_modules/oxlint/configuration_schema.json",
+  "extends": ["./node_modules/@foldkit/oxlint-plugin/recommended.json"],
+  "plugins": ["typescript", "unicorn", "oxc", "vitest"],
+  "categories": {
+    "correctness": "error"
+  },
+  "rules": {
+    "no-unused-vars": [
+      "error",
+      {
+        "argsIgnorePattern": "^_",
+        "varsIgnorePattern": "^_"
+      }
+    ],
+    "typescript/no-explicit-any": "error",
+    "sort-imports": [
+      "error",
+      {
+        "ignoreDeclarationSort": true,
+        "ignoreCase": false
+      }
+    ]
+  },
+  "overrides": [
+    {
+      "files": ["src/**/*.ts"],
+      "rules": {
+        "foldkit/no-module-level-mutable-state": "off",
+        "foldkit/no-impure-call-at-decision-time": "off",
+        "foldkit/no-switch-on-message-tag": "off"
+      }
+    },
+    {
+      "files": ["example/src/bugs/**/*.ts"],
+      "rules": {
+        "foldkit/keyed-required-for-mapped-rows": "off",
+        "foldkit/lazy-view-stable-references": "off",
+        "foldkit/no-array-index-view-keys": "off"
+      }
+    }
+  ],
+  "ignorePatterns": ["dist/", "repos/", "site/", "**/*.d.ts"]
+}

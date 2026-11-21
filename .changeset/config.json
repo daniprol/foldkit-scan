@@ -1,0 +1,10 @@
+{
+  "$schema": "https://unpkg.com/@changesets/config@4.0.0/schema.json",
+  "changelog": [
+    "@changesets/changelog-github",
+    { "repo": "daniprol/foldkit-scan" }
+  ],
+  "commit": false,
+  "access": "public",
+  "baseBranch": "main"
+}
