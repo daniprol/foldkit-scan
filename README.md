@@ -51,6 +51,10 @@ const rowSlot = createKeyedLazy()
 const lazyRow = scan.keyedLazy('Row', rowSlot)
 ```
 
+## Docs
+
+Guide, API reference and a live demo: **[daniprol.github.io/foldkit-scan](https://daniprol.github.io/foldkit-scan/)**
+
 ## Try it
 
 The [example](example/) is a small task list with three performance bugs planted on purpose. Switch them on and off and watch the panel.
