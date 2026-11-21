@@ -9,6 +9,8 @@ export * as Scan from './scan'
 export { decodeReport } from './report'
 export type { Scan as ScanInstance, ScanOptions } from './scan'
 export type {
+  CommandOutcome,
+  CommandRecord,
   DomChange,
   DomChangeKind,
   FrameRecord,

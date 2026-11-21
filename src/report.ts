@@ -47,6 +47,7 @@ const ReportSchema = Schema.Struct({
       ),
       isWasted: Schema.Boolean,
       isReplay: Schema.Boolean,
+      historyIndex: Schema.optionalKey(Schema.Finite),
     }),
   ),
   hotspots: Schema.Struct({
@@ -75,6 +76,22 @@ const ReportSchema = Schema.Struct({
       explanation: Schema.String,
       hint: Schema.String,
       count: Schema.Finite,
+    }),
+  ),
+  commands: Schema.Array(
+    Schema.Struct({
+      name: Schema.String,
+      startedAt: Schema.Finite,
+      // optionalKey: the key may be missing, as it is after JSON drops an
+      // undefined value.
+      durationMs: Schema.optionalKey(Schema.Finite),
+      outcome: Schema.Literals([
+        'Running',
+        'Success',
+        'Failure',
+        'Interrupted',
+      ]),
+      resultTag: Schema.optionalKey(Schema.String),
     }),
   ),
 })

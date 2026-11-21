@@ -136,6 +136,8 @@ canvas.flashes { position: fixed; inset: 0; width: 100%; height: 100%; pointer-e
 .list .kind.Churn { color: var(--issue); }
 .list .yes { color: var(--good); font-size: 10.5px; }
 .list .no { color: var(--muted); font-size: 10.5px; }
+.list .failed { color: var(--issue); }
+.mini.devtools { margin: 2px 0 8px; }
 .list em { margin-left: auto; font: normal 10.5px var(--mono); color: var(--muted); }
 .mini { background: var(--raised); border: 1px solid var(--line); border-radius: 4px; font-size: 10px; padding: 1px 6px; color: var(--muted); }
 .mini:hover { color: var(--fg); }

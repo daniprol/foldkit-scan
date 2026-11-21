@@ -15,6 +15,7 @@ const frame = (overrides: Partial<FrameRecord> = {}): FrameRecord => ({
   changes: [],
   isWasted: false,
   isReplay: false,
+  historyIndex: undefined,
   ...overrides,
 })
 

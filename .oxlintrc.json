@@ -28,7 +28,9 @@
       "rules": {
         "foldkit/no-module-level-mutable-state": "off",
         "foldkit/no-impure-call-at-decision-time": "off",
-        "foldkit/no-switch-on-message-tag": "off"
+        "foldkit/no-switch-on-message-tag": "off",
+        // The report has a `commands` list too, not a Foldkit return value.
+        "foldkit/no-empty-commands-array": "off"
       }
     },
     {

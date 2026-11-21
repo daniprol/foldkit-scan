@@ -53,7 +53,11 @@ export const makeIssueTracker = (
 
   const see = (sighting: Sighting, at = now()): void => {
     const id = `${sighting.kind}:${sighting.subject}`
-    const times = (recent.get(id) ?? []).filter(t => at - t <= WINDOW_MS)
+    // Only the last few sightings matter, so keep at most that many.
+    // A busy page can report the same issue hundreds of times a second.
+    const times = (recent.get(id) ?? [])
+      .slice(1 - REPEATS_NEEDED)
+      .filter(t => at - t <= WINDOW_MS)
     times.push(at)
     recent.set(id, times)
 

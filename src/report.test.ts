@@ -16,6 +16,7 @@ const report: Report = {
       changes: [{ kind: 'Changed', label: 'src/rows.ts#row' }],
       isWasted: false,
       isReplay: false,
+      historyIndex: 3,
     },
   ],
   hotspots: {
@@ -32,6 +33,17 @@ const report: Report = {
     },
   ],
   issues: [],
+  commands: [
+    {
+      name: 'FetchWeather',
+      startedAt: 10,
+      durationMs: 42,
+      outcome: 'Success',
+      resultTag: 'GotWeather',
+    },
+    // Still running: no duration, no result.
+    { name: 'FetchWeather', startedAt: 60, outcome: 'Running' },
+  ],
 }
 
 describe('decodeReport', () => {

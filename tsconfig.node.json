@@ -1,0 +1,11 @@
+{
+  // The Node side: the Vite plugin and the MCP server.
+  "extends": "./tsconfig.json",
+  "compilerOptions": {
+    // DOM stays because the shared report types mention Element.
+    "lib": ["ES2022", "DOM"],
+    "types": ["node"]
+  },
+  "include": ["src/node"],
+  "exclude": []
+}

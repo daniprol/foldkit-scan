@@ -2,7 +2,11 @@
 # The library is the root package. The docs site is a second package, so it
 # can use TypeScript 6 (TypeDoc needs its compiler API) while the root stays
 # on TypeScript 7.
+#
+# '.' lists the root too. pnpm includes it anyway, but changesets only
+# versions packages listed here.
 packages:
+  - '.'
   - docs
 
 # Wait one day before installing a brand-new release (supply-chain safety).

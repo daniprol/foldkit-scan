@@ -17,6 +17,7 @@ const application = Runtime.makeApplication({
   update,
   view: scan.view(view),
   slow: scan.slow,
+  resources: scan.resources,
   subscriptions,
   container: document.getElementById('root'),
 })

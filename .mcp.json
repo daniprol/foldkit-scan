@@ -3,6 +3,10 @@
     "foldkit-devtools": {
       "command": "npx",
       "args": ["-y", "@foldkit/devtools-mcp"]
+    },
+    "foldkit-scan": {
+      "command": "node",
+      "args": ["dist/mcp.js"]
     }
   }
 }

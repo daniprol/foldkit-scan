@@ -3,11 +3,14 @@ import { defineConfig } from 'vitest/config'
 
 import { foldkit } from '@foldkit/vite-plugin'
 
+import { foldkitScan } from '../src/node/vite.ts'
+
 const librarySource = fileURLToPath(new URL('../src/index.ts', import.meta.url))
 
 export default defineConfig({
   // foldkit() adds view identity stamps, hot reload and DevTools.
-  plugins: [foldkit()],
+  // foldkitScan() serves reports to the MCP server and links DevTools.
+  plugins: [foldkit(), foldkitScan({ experimentalDevToolsLink: true })],
   resolve: {
     // The example imports 'foldkit-scan' like a real app,
     // but gets the live source, so edits show up instantly.

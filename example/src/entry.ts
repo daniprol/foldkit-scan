@@ -9,6 +9,7 @@ const application = Runtime.makeApplication({
   update, // untouched
   view: scan.view(view), // a pass-through that remembers the result
   slow: scan.slow, // timings come from Foldkit itself
+  resources: scan.resources, // lets foldkit-scan see Commands
   subscriptions,
   container: document.getElementById('root'),
   devTools: {

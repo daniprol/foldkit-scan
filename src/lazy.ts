@@ -165,6 +165,11 @@ export const makeLazyTracker = (
 
   const commitRender = (): void => {
     const touched = new Map<string, Set<PropertyKey | undefined>>()
+    // One report per slot per render, even when a list has 1,000 rows.
+    const unstableBySlot = new Map<
+      string,
+      { unstableArgs: Set<number>; isUnstableFunction: boolean }
+    >()
     for (const event of buffer) {
       const stats = statsFor(event.name)
       if (event.isHit) {
@@ -177,11 +182,23 @@ export const makeLazyTracker = (
       }
       stats.unstableFunction ||= event.isUnstableFunction
       if (event.unstableArgs.length > 0 || event.isUnstableFunction) {
-        onUnstable(event.name, event)
+        const slot = unstableBySlot.get(event.name) ?? {
+          unstableArgs: new Set<number>(),
+          isUnstableFunction: false,
+        }
+        for (const index of event.unstableArgs) slot.unstableArgs.add(index)
+        slot.isUnstableFunction ||= event.isUnstableFunction
+        unstableBySlot.set(event.name, slot)
       }
       const keys = touched.get(event.name) ?? new Set()
       keys.add(event.key)
       touched.set(event.name, keys)
+    }
+    for (const [name, slot] of unstableBySlot) {
+      onUnstable(name, {
+        unstableArgs: [...slot.unstableArgs].sort((a, b) => a - b),
+        isUnstableFunction: slot.isUnstableFunction,
+      })
     }
     // Forget keys this render did not use.
     for (const [name, calls] of previousCalls) {

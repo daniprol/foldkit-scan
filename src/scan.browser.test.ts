@@ -1,5 +1,6 @@
-import { Schema } from 'effect'
-import { Runtime } from 'foldkit'
+import { Duration, Effect, Schema } from 'effect'
+import { Command, Runtime } from 'foldkit'
+import type { Update } from 'foldkit'
 import {
   type Document,
   type Html,
@@ -7,7 +8,7 @@ import {
   createKeyedLazy,
 } from 'foldkit/html'
 import { defineMessageUnion } from 'foldkit/message'
-import { afterEach, describe, expect, test } from 'vitest'
+import { afterEach, describe, expect, test, vi } from 'vitest'
 
 import * as Scan from './scan'
 import type { FrameRecord } from './types'
@@ -220,5 +221,80 @@ describe('Scan.make in a real app', () => {
     const report = JSON.parse(JSON.stringify(scan.report()))
     expect(report.version).toBe(1)
     expect(report.frames).toHaveLength(1)
+  })
+})
+
+describe('Commands', () => {
+  const SaveMessage = defineMessageUnion({
+    ClickedSave: {},
+    CompletedSave: {},
+  })
+  type SaveMessage = typeof SaveMessage.Type
+  const SaveModel = Schema.Struct({ saves: Schema.Finite })
+  type SaveModel = typeof SaveModel.Type
+
+  const Save = Command.define('Save', {
+    messages: [SaveMessage.CompletedSave],
+    execute: Effect.sleep(Duration.millis(20)).pipe(
+      Effect.as(SaveMessage.CompletedSave()),
+    ),
+  })
+
+  test('records Commands and draws them on the Performance track', async () => {
+    const measures: Array<string> = []
+    const observer = new PerformanceObserver(list => {
+      for (const entry of list.getEntries()) measures.push(entry.name)
+    })
+    observer.observe({ type: 'measure' })
+
+    const container = document.createElement('div')
+    container.id = 'commands-app'
+    document.body.append(container)
+    const scan = Scan.make<SaveModel, SaveMessage>({
+      container,
+      overlay: false,
+    })
+    const application = Runtime.makeApplication({
+      Model: SaveModel,
+      init: () => ({ model: { saves: 0 } }),
+      update: (model: SaveModel, message: SaveMessage) =>
+        SaveMessage.match<Update.Return<SaveModel, SaveMessage>>(message, {
+          ClickedSave: () => ({ model, commands: [Save()] }),
+          CompletedSave: () => ({ model: { saves: model.saves + 1 } }),
+        }),
+      view: scan.view(
+        (model: SaveModel, h: HtmlBuilder<SaveMessage>): Document => ({
+          title: 'save',
+          body: h.button(
+            [h.Class('save'), h.OnClick(SaveMessage.ClickedSave())],
+            [String(model.saves)],
+          ),
+        }),
+      ),
+      slow: scan.slow,
+      resources: scan.resources,
+      container,
+    })
+    Runtime.run(application)
+
+    await vi.waitFor(() =>
+      expect(document.querySelector('.save')).not.toBeNull(),
+    )
+    click('.save')
+    await vi.waitFor(() =>
+      expect(scan.commands().at(-1)?.outcome).toBe('Success'),
+    )
+    const [command] = scan.commands()
+    expect(command?.name).toBe('Save')
+    expect(command?.resultTag).toBe('CompletedSave')
+    expect(command?.durationMs).toBeGreaterThanOrEqual(15)
+    expect(scan.report().commands).toHaveLength(1)
+
+    await vi.waitFor(() => expect(measures).toContain('Save'))
+    expect(measures).toEqual(
+      expect.arrayContaining(['update ClickedSave', 'view', 'patch']),
+    )
+    observer.disconnect()
+    scan.dispose()
   })
 })

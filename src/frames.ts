@@ -44,6 +44,9 @@ export type FrameBuilderOptions = Readonly<{
   maxFrames: number
   /** Returns every DOM change seen since the last call. */
   takeDomChanges: () => ReadonlyArray<DomChange>
+  /** The DevTools history index to stamp on each live frame. Only set by
+   *  the experimental DevTools link. */
+  historyIndex?: () => number | undefined
   /** Defaults to `performance.now`. Tests pass a fake clock. */
   now?: () => number
 }>
@@ -123,6 +126,7 @@ export const makeFrameBuilder = (
       patchMs,
       totalMs: updateMs + viewMs + patchMs,
       isReplay: false,
+      historyIndex: options.historyIndex?.(),
     }
     openMessages = []
     viewMs = 0
@@ -147,6 +151,7 @@ export const makeFrameBuilder = (
       changes,
       isWasted: false,
       isReplay: true,
+      historyIndex: undefined,
     })
   }
 

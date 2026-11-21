@@ -62,6 +62,9 @@ export type FrameRecord = Readonly<{
   /** The page changed without a Foldkit render: DevTools time travel, or
    *  code outside Foldkit. Drawn grey and left out of every statistic. */
   isReplay: boolean
+  /** The DevTools history entry of the frame's last Message, when the
+   *  experimental DevTools link is on. */
+  historyIndex: number | undefined
 }>
 
 /** Hit and miss counts for one lazy slot wrapped with `scan.lazy` or
@@ -99,6 +102,30 @@ export type Issue = Readonly<{
   lastSeenAt: number
 }>
 
+/**
+ * One Command Foldkit ran, seen through the Effect span Foldkit wraps it in.
+ *
+ * - `Running`: it has not finished yet.
+ * - `Success`: it returned a Message (`resultTag`).
+ * - `Failure`: it failed or died. Foldkit shows its crash view for this.
+ * - `Interrupted`: it was cancelled, for example by a newer Command with
+ *   the same interrupt key.
+ */
+export type CommandOutcome = 'Running' | 'Success' | 'Failure' | 'Interrupted'
+
+export type CommandRecord = Readonly<{
+  id: number
+  /** The name given to `Command.define`, like `FetchWeather`. */
+  name: string
+  /** `performance.now()` when it started. */
+  startedAt: number
+  /** `undefined` while it is running. */
+  durationMs: number | undefined
+  outcome: CommandOutcome
+  /** The tag of the Message it returned, like `GotWeather`. */
+  resultTag: string | undefined
+}>
+
 /** A row in the Hotspots tab. */
 export type Hotspot = Readonly<{
   name: string
@@ -124,6 +151,7 @@ export type Report = Readonly<{
       changes: ReadonlyArray<Readonly<{ kind: DomChangeKind; label: string }>>
       isWasted: boolean
       isReplay: boolean
+      historyIndex?: number
     }>
   >
   hotspots: Readonly<{
@@ -132,4 +160,15 @@ export type Report = Readonly<{
   }>
   lazy: ReadonlyArray<LazyStat>
   issues: ReadonlyArray<Omit<Issue, 'lastSeenAt'>>
+  /** Recent Commands. Empty unless you pass `scan.resources` to Foldkit. */
+  commands: ReadonlyArray<
+    Readonly<{
+      name: string
+      startedAt: number
+      /** Missing while it is running. */
+      durationMs?: number
+      outcome: CommandOutcome
+      resultTag?: string
+    }>
+  >
 }>

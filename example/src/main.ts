@@ -1,5 +1,14 @@
-import { Array, Clock, Duration, Option, Schema, Stream, String } from 'effect'
-import { Runtime, Subscription, type Update } from 'foldkit'
+import {
+  Array,
+  Clock,
+  Duration,
+  Effect,
+  Option,
+  Schema,
+  Stream,
+  String,
+} from 'effect'
+import { Command, Runtime, Subscription, type Update } from 'foldkit'
 import {
   type Document,
   type Html,
@@ -38,6 +47,8 @@ export const Model = Schema.Struct({
   nextId: Schema.Finite,
   now: Schema.Finite,
   onlineCount: Schema.Finite,
+  isSaving: Schema.Boolean,
+  maybeSavedAt: Schema.Option(Schema.Finite),
   bugs: Schema.Array(Bug),
 })
 export type Model = typeof Model.Type
@@ -48,6 +59,9 @@ export const Message = defineMessageUnion({
   UpdatedFilter: { text: Schema.String },
   ClickedTask: { id: Schema.String },
   ClickedNewTask: {},
+  ClickedAddManyTasks: {},
+  ClickedSave: {},
+  CompletedSaveTasks: { savedAt: Schema.Finite },
   ToggledBug: { bug: Bug },
   Ticked: { now: Schema.Finite },
   ReceivedPresence: { onlineCount: Schema.Finite },
@@ -85,8 +99,24 @@ export const init: Runtime.ApplicationInit<Model, Message> = () => ({
     nextId: 8,
     now: 0,
     onlineCount: 3,
+    isSaving: false,
+    maybeSavedAt: Option.none(),
     bugs: ['UnstableArgument', 'IndexKeys', 'NoopUpdate'],
   },
+})
+
+// COMMAND
+
+/** How many tasks "Add 1,000" adds, to try foldkit-scan on a big page. */
+const MANY_TASKS = 1000
+
+// A pretend save to a server. foldkit-scan shows it in the Command lane.
+const SaveTasks = Command.define('SaveTasks', {
+  messages: [Message.CompletedSaveTasks],
+  execute: Effect.sleep(Duration.millis(400)).pipe(
+    Effect.andThen(Clock.currentTimeMillis),
+    Effect.map(savedAt => Message.CompletedSaveTasks({ savedAt })),
+  ),
 })
 
 // UPDATE
@@ -109,6 +139,28 @@ export const update = (model: Model, message: Message): UpdateReturn =>
       model: modifyFields(model, {
         tasks: tasks => [makeTask(model.nextId), ...tasks],
         nextId: nextId => nextId + 1,
+      }),
+    }),
+
+    ClickedAddManyTasks: () => ({
+      model: modifyFields(model, {
+        tasks: tasks => [
+          ...tasks,
+          ...Array.makeBy(MANY_TASKS, index => makeTask(model.nextId + index)),
+        ],
+        nextId: nextId => nextId + MANY_TASKS,
+      }),
+    }),
+
+    ClickedSave: () => ({
+      model: modifyFields(model, { isSaving: () => true }),
+      commands: [SaveTasks()],
+    }),
+
+    CompletedSaveTasks: ({ savedAt }) => ({
+      model: modifyFields(model, {
+        isSaving: () => false,
+        maybeSavedAt: () => Option.some(savedAt),
       }),
     }),
 
@@ -271,6 +323,21 @@ const headerView = (model: Model, h: HtmlBuilder<Message>): Html =>
             [h.Class('button'), h.OnClick(Message.ClickedNewTask())],
             ['New task'],
           ),
+          h.button(
+            [
+              h.Class('button secondary'),
+              h.OnClick(Message.ClickedAddManyTasks()),
+            ],
+            ['Add 1,000'],
+          ),
+          h.button(
+            [
+              h.Class('button secondary'),
+              h.Disabled(model.isSaving),
+              h.OnClick(Message.ClickedSave()),
+            ],
+            [model.isSaving ? 'Saving…' : 'Save'],
+          ),
         ],
       ),
     ],
@@ -280,7 +347,17 @@ const footerView = (model: Model, h: HtmlBuilder<Message>): Html =>
   h.div(
     [h.Class('foot')],
     [
-      h.span([], [`${model.tasks.length} tasks`]),
+      h.span(
+        [],
+        [
+          `${model.tasks.length} tasks`,
+          Option.match(model.maybeSavedAt, {
+            onNone: () => '',
+            onSome: savedAt =>
+              ` · saved ${new Date(savedAt).toLocaleTimeString()}`,
+          }),
+        ],
+      ),
       h.span(
         [],
         [
