@@ -6,7 +6,11 @@ import type { Message, Model } from './main'
 // because both entry.ts (the runtime config) and main.ts (the lazy slots)
 // use it.
 export const scan = Scan.make<Model, Message>({
-  // Off in production builds and in tests.
-  enabled: import.meta.env.DEV && import.meta.env.MODE !== 'test',
+  // Off in production builds, in tests, and with ?scan=off in the URL
+  // (handy to compare how fast the app is without it).
+  enabled:
+    import.meta.env.DEV &&
+    import.meta.env.MODE !== 'test' &&
+    new URLSearchParams(location.search).get('scan') !== 'off',
   container: document.getElementById('root'),
 })
