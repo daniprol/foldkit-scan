@@ -2,7 +2,7 @@ node_modules/
 dist/
 site/
 coverage/
-.vitest-attachments/
+.vitest/
 __screenshots__/
 *.log
 .DS_Store

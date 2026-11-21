@@ -1,5 +1,9 @@
 import { defineConfig } from 'vitest/config'
 
+// Set CHROMIUM_PATH to use a Chromium that is already installed instead of
+// the one `playwright install` downloads.
+const executablePath = process.env['CHROMIUM_PATH']
+
 import { playwright } from '@vitest/browser-playwright'
 
 export default defineConfig({
@@ -22,7 +26,10 @@ export default defineConfig({
           include: ['src/**/*.browser.test.ts'],
           browser: {
             enabled: true,
-            provider: playwright(),
+            provider: playwright({
+              launchOptions:
+                executablePath === undefined ? {} : { executablePath },
+            }),
             headless: true,
             instances: [{ browser: 'chromium' }],
           },
