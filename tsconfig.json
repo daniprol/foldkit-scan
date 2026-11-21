@@ -27,5 +27,7 @@
       }
     ]
   },
-  "include": ["src"]
+  "include": ["src"],
+  // The Node side has its own config: tsconfig.node.json.
+  "exclude": ["src/node"]
 }
