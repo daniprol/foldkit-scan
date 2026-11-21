@@ -1,4 +1,9 @@
-# foldkit-scan
+<h1>
+  <picture>
+    <source media="(prefers-color-scheme: dark)" srcset="docs/src/assets/logo-dark.svg">
+    <img alt="foldkit-scan" src="docs/src/assets/logo-light.svg" height="48">
+  </picture>
+</h1>
 
 See what re-renders in your [Foldkit](https://github.com/foldkit/foldkit) app, and why.
 

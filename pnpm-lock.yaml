@@ -265,6 +265,9 @@ importers:
       foldkit:
         specifier: 0.171.0
         version: 0.171.0(@effect/platform-browser@4.1.5(effect@4.1.5))(effect@4.1.5)
+      starlight-theme-black:
+        specifier: 0.7.2
+        version: 0.7.2(@astrojs/starlight@0.43.1(@astrojs/markdown-remark@7.3.10)(astro@7.4.13(@astrojs/markdown-remark@7.3.10)(@types/node@26.6.6)(yaml@2.9.1))(typescript@6.0.3))
       starlight-typedoc:
         specifier: 0.23.3
         version: 0.23.3(@astrojs/starlight@0.43.1(@astrojs/markdown-remark@7.3.10)(astro@7.4.13(@astrojs/markdown-remark@7.3.10)(@types/node@26.6.6)(yaml@2.9.1))(typescript@6.0.3))(astro@7.4.13(@astrojs/markdown-remark@7.3.10)(@types/node@26.6.6)(yaml@2.9.1))(typedoc-plugin-markdown@4.14.1(typedoc@0.28.20(typescript@6.0.3)))(typedoc@0.28.20(typescript@6.0.3))
@@ -3041,6 +3044,12 @@ packages:
 
   space-separated-tokens@2.0.2:
     resolution: {integrity: sha512-PEGlAwrG8yXGXRjW32fGbg66JAlOAwbObuqVoJpv/mRgoWDQfgH1wDPvtzWyUSNAXBGSk8h755YDbbcEy3SH2Q==}
+
+  starlight-theme-black@0.7.2:
+    resolution: {integrity: sha512-8Ehzrsacvr5Ykie5lC/UrnyXieSIi/4chnAAVwJFunxm4f9+ktjXfegMXRit4aB9+8kQRLc+1BtOrLp0RrCbyw==}
+    engines: {node: '>=22.12.0'}
+    peerDependencies:
+      '@astrojs/starlight': '>=0.41'
 
   starlight-typedoc@0.23.3:
     resolution: {integrity: sha512-kXccDHDS90/sg5G4hZJuG2JgLAsOISEZS0donme8IvwD+rlaG3mMEnxTBo6gzjv1iPWOhgd0wDDuPSTtwZUGLA==}
@@ -6569,6 +6578,10 @@ snapshots:
   source-map@0.8.0: {}
 
   space-separated-tokens@2.0.2: {}
+
+  starlight-theme-black@0.7.2(@astrojs/starlight@0.43.1(@astrojs/markdown-remark@7.3.10)(astro@7.4.13(@astrojs/markdown-remark@7.3.10)(@types/node@26.6.6)(yaml@2.9.1))(typescript@6.0.3)):
+    dependencies:
+      '@astrojs/starlight': 0.43.1(@astrojs/markdown-remark@7.3.10)(astro@7.4.13(@astrojs/markdown-remark@7.3.10)(@types/node@26.6.6)(yaml@2.9.1))(typescript@6.0.3)
 
   starlight-typedoc@0.23.3(@astrojs/starlight@0.43.1(@astrojs/markdown-remark@7.3.10)(astro@7.4.13(@astrojs/markdown-remark@7.3.10)(@types/node@26.6.6)(yaml@2.9.1))(typescript@6.0.3))(astro@7.4.13(@astrojs/markdown-remark@7.3.10)(@types/node@26.6.6)(yaml@2.9.1))(typedoc-plugin-markdown@4.14.1(typedoc@0.28.20(typescript@6.0.3)))(typedoc@0.28.20(typescript@6.0.3)):
     dependencies:
