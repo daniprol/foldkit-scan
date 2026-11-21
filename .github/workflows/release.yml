@@ -1,0 +1,108 @@
+name: Release
+
+# Publishes foldkit-scan to npm.
+#
+# - Push a tag like v0.1.0 to publish that version. The tag must match the
+#   version in package.json.
+# - Or run it by hand from the Actions tab. It is a dry run by default: it
+#   checks, builds and packs everything, then stops before publishing.
+#
+# Publishing uses npm trusted publishing: GitHub proves to npm which repo
+# and workflow is asking, so no npm token is stored here. npm then adds a
+# provenance statement that links each version to the run that built it.
+# The setup steps are in RELEASING.md.
+
+on:
+  push:
+    tags: ['v*']
+  workflow_dispatch:
+    inputs:
+      dry-run:
+        description: Check and pack only, do not publish
+        type: boolean
+        default: true
+
+permissions:
+  contents: read
+
+# Never run two releases at once, and never cancel one halfway.
+concurrency:
+  group: release
+  cancel-in-progress: false
+
+jobs:
+  check:
+    name: Check and pack
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v7
+      - uses: pnpm/action-setup@v6
+      - uses: actions/setup-node@v7
+        with:
+          node-version-file: .node-version
+          cache: pnpm
+      - run: pnpm install --frozen-lockfile
+
+      - name: Check that the tag matches package.json
+        if: github.ref_type == 'tag'
+        run: |
+          version="v$(node -p "require('./package.json').version")"
+          if [ "$version" != "$GITHUB_REF_NAME" ]; then
+            echo "::error::Tag $GITHUB_REF_NAME does not match package.json ($version). Run pnpm changeset version first."
+            exit 1
+          fi
+
+      - name: Refuse a real publish from a branch
+        if: github.event_name == 'workflow_dispatch' && !inputs.dry-run && github.ref_type != 'tag'
+        run: |
+          echo "::error::A real publish must run from a tag. Pick the tag in 'Use workflow from', or leave dry run on."
+          exit 1
+
+      # The same checks as CI, so nothing unchecked reaches npm.
+      - run: pnpm lint
+      - run: pnpm typecheck
+      - run: pnpm exec playwright install --with-deps chromium
+      - run: pnpm test
+
+      # Build also runs publint and attw (are-the-types-wrong).
+      - run: pnpm build
+
+      # The exact file npm will receive. Its contents are listed in the log.
+      - name: Pack
+        run: |
+          mkdir -p package
+          npm pack --pack-destination package
+      - uses: actions/upload-artifact@v6
+        with:
+          name: package
+          path: package/*.tgz
+          if-no-files-found: error
+
+  publish:
+    name: Publish to npm
+    needs: check
+    if: github.ref_type == 'tag' && (github.event_name == 'push' || !inputs.dry-run)
+    runs-on: ubuntu-latest
+    # Shown on npm's trusted publisher page. Add required reviewers to this
+    # environment in the repo settings if you want to approve each release.
+    environment: npm
+    permissions:
+      contents: read
+      # Lets the job ask GitHub for the token that proves who it is to npm.
+      id-token: write
+    steps:
+      - uses: actions/download-artifact@v7
+        with:
+          name: package
+      - uses: actions/setup-node@v7
+        with:
+          node-version: 24
+          registry-url: https://registry.npmjs.org
+      # Trusted publishing needs npm 11.5.1 or later.
+      - run: npm install --global npm@11
+      - name: Publish
+        run: npm publish ./*.tgz --access public --provenance
+        env:
+          # Only for the very first release, before the package exists on
+          # npm. Delete the secret once trusted publishing is set up.
+          NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}

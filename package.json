@@ -1,8 +1,12 @@
 {
   "name": "foldkit-scan",
-  "version": "0.0.0",
+  "version": "0.1.0",
   "description": "See what re-renders in your Foldkit app, and why.",
   "license": "MIT",
+  "homepage": "https://daniprol.github.io/foldkit-scan/",
+  "bugs": {
+    "url": "https://github.com/daniprol/foldkit-scan/issues"
+  },
   "repository": {
     "type": "git",
     "url": "git+https://github.com/daniprol/foldkit-scan.git"
@@ -45,7 +49,7 @@
     "format:check": "oxfmt --check",
     "check": "pnpm format:check && pnpm lint && pnpm typecheck && pnpm test && pnpm build",
     "changeset": "changeset",
-    "release": "pnpm build && changeset publish"
+    "version-packages": "changeset version && pnpm install --lockfile-only"
   },
   "peerDependencies": {
     "effect": "~4.1.0",
@@ -54,7 +58,6 @@
   },
   "devDependencies": {
     "@arethetypeswrong/core": "^0.18.5",
-    "@changesets/changelog-github": "^1.0.1",
     "@changesets/cli": "^3.0.3",
     "@effect/platform-browser": "4.1.5",
     "@effect/tsgo": "0.73.2",
