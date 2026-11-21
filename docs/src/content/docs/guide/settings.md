@@ -2,7 +2,7 @@
 title: Settings
 description: Options for Scan.make, and widget settings saved per site.
 sidebar:
-  order: 6
+  order: 8
 ---
 
 ## Options
@@ -18,18 +18,21 @@ const scan = Scan.make<Model, Message>({
   devToolsPosition: 'BottomRight',
   forwardSlowWarnings: false,
   maxFrames: 120,
+  performanceTrack: true,
 })
 ```
 
-| Option                | Default         | Does                                                              |
-| --------------------- | --------------- | ----------------------------------------------------------------- |
-| `enabled`             | `true`          | `false` turns every helper into a pass-through. Nothing runs.     |
-| `container`           | none            | The element you give Foldkit. Needed for flashes and DOM changes. |
-| `ignoreMessages`      | `[]`            | Message tags to leave out of frames and stats, like a clock tick. |
-| `overlay`             | `true`          | `false` runs [headless](../data/#headless).                       |
-| `devToolsPosition`    | `'BottomRight'` | Where Foldkit DevTools sits. The pill takes the opposite corner.  |
-| `forwardSlowWarnings` | `false`         | Keep Foldkit's console warning for phases over budget.            |
-| `maxFrames`           | `120`           | How many recent frames to keep.                                   |
+| Option                | Default         | Does                                                                                             |
+| --------------------- | --------------- | ------------------------------------------------------------------------------------------------ |
+| `enabled`             | `true`          | `false` turns every helper into a pass-through. Nothing runs.                                    |
+| `container`           | none            | The element you give Foldkit. Needed for flashes and DOM changes.                                |
+| `ignoreMessages`      | `[]`            | Message tags to leave out of frames and stats, like a clock tick.                                |
+| `overlay`             | `true`          | `false` runs [headless](../data/#headless).                                                      |
+| `devToolsPosition`    | `'BottomRight'` | Where Foldkit DevTools sits. The pill takes the opposite corner.                                 |
+| `forwardSlowWarnings` | `false`         | Keep Foldkit's console warning for phases over budget.                                           |
+| `maxFrames`           | `120`           | How many recent frames to keep.                                                                  |
+| `performanceTrack`    | `true`          | Draw [tracks](../commands/#chromes-performance-panel) in Chrome's Performance panel.             |
+| `tracer`              | none            | A [Tracer you already use](../commands/#keep-your-own-tracer). `scan.resources` passes spans on. |
 
 `ignoreMessages` matches the innermost tag, so `ClickedRow` also ignores `GotTableMessage › ClickedRow`. The **ignore** button in the Frames tab does the same for the current visit.
 
