@@ -1,0 +1,19 @@
+/* The Black theme hides the site title on small screens. Keep the logo
+   mark visible there, next to the Menu button. */
+@media (max-width: 63.99rem) {
+  :root .site-title {
+    display: flex;
+    order: -1;
+  }
+
+  :root .site-title > span {
+    display: none;
+  }
+}
+
+/* The home page shows the logo mark beside the title. */
+:root .hero-image img {
+  width: min(10rem, 40vw);
+  height: auto;
+  margin-inline: auto;
+}
