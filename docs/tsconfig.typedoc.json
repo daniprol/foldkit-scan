@@ -1,0 +1,17 @@
+{
+  // TypeDoc runs on TypeScript 6. The root tsconfig targets TypeScript 7,
+  // so this one repeats only what TypeDoc needs to read src/.
+  "compilerOptions": {
+    "target": "ES2022",
+    "module": "ESNext",
+    "moduleResolution": "bundler",
+    "lib": ["ES2022", "DOM", "DOM.Iterable"],
+    "types": [],
+    "strict": true,
+    "exactOptionalPropertyTypes": true,
+    "verbatimModuleSyntax": true,
+    "skipLibCheck": true,
+    "noEmit": true
+  },
+  "include": ["../src/index.ts"]
+}
