@@ -13,4 +13,7 @@ export const scan = Scan.make<Model, Message>({
     import.meta.env.MODE !== 'test' &&
     new URLSearchParams(location.search).get('scan') !== 'off',
   container: document.getElementById('root'),
+  // The header clock ticks every second. It still flashes, but stays out of
+  // the Frames tab and the stats.
+  ignoreMessages: ['Ticked'],
 })

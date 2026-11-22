@@ -90,7 +90,7 @@ Guide, API reference and a live demo: **[daniprol.github.io/foldkit-scan](https:
 
 ## Try it
 
-The [example](example/) is a small task list with three performance bugs planted on purpose. Switch them on and off and watch the panel. "Add 1,000" makes the page big, "Save" runs a Command, and `?scan=off` in the URL turns foldkit-scan off to compare.
+The [example](example/) is a small sprint board. Hover a row, click one, change its status: only what changed flashes. Then switch on one of the four performance bugs planted in `example/src/bugs/` and watch the flashes spread, the frame time climb and the Issues tab fill up. "Add 1,000" makes the page big, "Save" runs a Command, and `?scan=off` in the URL turns foldkit-scan off to compare.
 
 ```sh
 pnpm install

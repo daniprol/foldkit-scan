@@ -38,7 +38,9 @@
       "rules": {
         "foldkit/keyed-required-for-mapped-rows": "off",
         "foldkit/lazy-view-stable-references": "off",
-        "foldkit/no-array-index-view-keys": "off"
+        "foldkit/no-array-index-view-keys": "off",
+        // slowView.ts reads the clock in a view to burn time on purpose.
+        "foldkit/no-impure-call-at-decision-time": "off"
       }
     }
   ],

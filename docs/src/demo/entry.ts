@@ -9,7 +9,7 @@ import {
 } from '../../../example/src/main'
 import { scan } from './scan'
 
-// The example task list from the repo, mounted as is. Its scan.ts is swapped
+// The example sprint board from the repo, mounted as is. Its scan.ts is swapped
 // for ./scan.ts by astro.config.mjs.
 const application = Runtime.makeApplication({
   Model,
