@@ -1,19 +1,22 @@
 ---
 title: Live demo
-description: The example task list with foldkit-scan running. Click around.
+description: The example sprint board with foldkit-scan running. Click around.
 tableOfContents: false
 ---
 
 import DemoFrame from '../../components/DemoFrame.astro'
 
-This is the repo's [example app](https://github.com/daniprol/foldkit-scan/tree/main/example): a task list with three performance bugs, all switched on.
+This is the repo's [example app](https://github.com/daniprol/foldkit-scan/tree/main/example): a small sprint board with four performance bugs you can switch on. They start off, so you first see what a healthy app looks like.
 
 Try this:
 
-1. **Watch the footer.** A clock ticks every second, so it flashes violet.
-2. **Type in the filter.** Rows below a hidden one flash with orange dashes. They were rebuilt, because their key includes their index.
-3. **Click a row**, then press <kbd>Alt</kbd>+<kbd>Shift</kbd>+<kbd>C</kbd> and point at a row. Its lazy slot misses every time: one argument is a new object each render.
-4. **Open the pill** in the bottom-left corner. The Issues tab names all three bugs, with fixes.
-5. **Untick a bug.** Its issue stops repeating.
+1. **Hover a row.** Only that row and the one you left flash violet. Each hover is a Message that changes the Model, and the patch touches just those two rows.
+2. **Click a row, then change its status.** The row, the status buttons and the workload bars flash. Nothing else does.
+3. **Watch the clock** in the header. It flashes every second, but `Ticked` is in `ignoreMessages`, so it stays out of the Frames tab.
+4. **Tick "Row keys include the index"**, then search or press **New task**. Orange dashes spread over every row below the change: they were rebuilt, because their key includes their position.
+5. **Tick "Heavy view on every render"** and hover around. The pill's frame time jumps past 100 ms and a Slow phase issue appears. With sound on (♪ in the panel), each stutter chimes.
+6. **Open the pill** in the bottom-left corner, or press <kbd>Alt</kbd>+<kbd>Shift</kbd>+<kbd>S</kbd>. The Issues tab names each bug you switched on, with its fix. Untick a bug and its issue stops repeating.
+
+Press **Add 1,000** to try a big page, **Save** to see a Command in the Frames tab, or open the demo with `?scan=off` to compare without foldkit-scan.
 
 <DemoFrame />
