@@ -13,7 +13,7 @@ See what re-renders in your [Foldkit](https://github.com/foldkit/foldkit) app, a
 - **Times every frame**: update, view and patch, straight from Foldkit's own `slow` hook.
 - **Finds the usual suspects**: updates that copy an unchanged Model, lazy views that never hit, and keyed lists rebuilt on every render. Each issue comes with the fix.
 - **Reaches your other tools**: Commands on a timeline, tracks in Chrome's Performance panel, and an MCP server for AI agents.
-- **Stays out of the way**: one small pill in a corner, a panel when you want it, and nothing at all in production.
+- **Stays out of the way**: one small pill in a corner, a panel when you want it, and nothing in your production bundle.
 
 ## Quickstart
 

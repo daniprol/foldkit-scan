@@ -5,6 +5,7 @@ import type { Document, HtmlBuilder } from 'foldkit/html'
 
 import { makeCommandTracker } from './commands'
 import { makeDevToolsLink } from './devtools'
+import { makeDisabled } from './disabled'
 import { type DomWatcher, makeDomWatcher } from './dom'
 import { type FrameListener, makeFrameBuilder } from './frames'
 import { makeHotspots } from './hotspots'
@@ -99,30 +100,6 @@ const isOverlayNode = (node: Node): boolean => {
   const element = node instanceof Element ? node : node.parentElement
   return element?.closest(`#${OVERLAY_HOST_ID}`) != null
 }
-
-const makeDisabled = <Model, Message>(): Scan<Model, Message> => ({
-  // An empty object means "Foldkit's defaults", exactly as if you had not
-  // passed `slow` at all.
-  slow: {},
-  view: view => view,
-  lazy: (_name, slot) => slot,
-  keyedLazy: (_name, slot) => slot,
-  resources: Layer.empty,
-  commands: () => [],
-  subscribe: () => () => {},
-  frames: () => [],
-  issues: () => [],
-  lazyStats: () => [],
-  report: () => ({
-    version: 1,
-    frames: [],
-    hotspots: { byView: [], byMessage: [] },
-    lazy: [],
-    issues: [],
-    commands: [],
-  }),
-  dispose: () => {},
-})
 
 /**
  * Sets up foldkit-scan for one app.

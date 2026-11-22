@@ -44,6 +44,12 @@ That's it. Open the panel with the pill or <kbd>Alt</kbd>+<kbd>Shift</kbd>+<kbd>
 - `scan.slow` gets the timings. Your `update` is never wrapped.
 - `container` is the element you give Foldkit. Without it, there are no flashes.
 
+## Production builds
+
+Leave the code as it is. In a production build, Vite and webpack pick foldkit-scan's empty build on their own: `Scan.make` hands everything back unchanged, and the overlay is not in your bundle. `enabled: import.meta.env.DEV` also turns it off at runtime, for any other setup.
+
+With a bundler that doesn't do this, import the empty build yourself in production, for example with an alias from `foldkit-scan` to `foldkit-scan/noop`.
+
 ## Name your views
 
 Flash labels like `rows.ts#taskRow` come from Foldkit's Vite plugin. Apps made with `create-foldkit-app` already have it:

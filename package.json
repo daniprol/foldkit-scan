@@ -30,7 +30,12 @@
   "exports": {
     ".": {
       "types": "./dist/index.d.ts",
+      "production": "./dist/noop.js",
       "default": "./dist/index.js"
+    },
+    "./noop": {
+      "types": "./dist/noop.d.ts",
+      "default": "./dist/noop.js"
     },
     "./vite": {
       "types": "./dist/vite.d.ts",
