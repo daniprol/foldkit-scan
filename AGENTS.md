@@ -4,6 +4,7 @@ A dev-time profiler overlay for Foldkit apps. CLAUDE.md is a symlink to this fil
 
 - The hot path (frames.ts, dom.ts, lazy.ts, overlay/*) is plain TypeScript. No Effect, no allocation per frame if avoidable.
 - Effect is used at the edges only: Schema in report.ts and settings.ts, Option and Equal in slow.ts and lazy.ts, Tracer in commands.ts, the DevTools store in devtools.ts.
+- src/noop.ts is the production build (the package's `production` export). Keep its exports in step with src/index.ts.
 - src/node/ is the Node side (Vite plugin, MCP server) with its own tsconfig.node.json. The rest of src/ runs in the browser.
 - Anything called once per lazy row must stay O(1): a 1,000-row list calls it 1,000 times per frame. Check big pages with the example's "Add 1,000" button.
 - Timings come from Foldkit's public `slow.onSlow` hook with budgets of -1. Never wrap the user's `update`.
