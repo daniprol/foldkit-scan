@@ -19,6 +19,7 @@ const scan = Scan.make<Model, Message>({
   forwardSlowWarnings: false,
   maxFrames: 120,
   performanceTrack: true,
+  sound: false,
 })
 ```
 
@@ -33,6 +34,7 @@ const scan = Scan.make<Model, Message>({
 | `maxFrames`           | `120`           | How many recent frames to keep.                                                                  |
 | `performanceTrack`    | `true`          | Draw [tracks](../commands/#chromes-performance-panel) in Chrome's Performance panel.             |
 | `tracer`              | none            | A [Tracer you already use](../commands/#keep-your-own-tracer). `scan.resources` passes spans on. |
+| `sound`               | `false`         | Start with the [sound](#sound) on. The panel's toggle wins once you use it.                      |
 
 `ignoreMessages` matches the innermost tag, so `ClickedRow` also ignores `GotTableMessage › ClickedRow`. The **ignore** button in the Frames tab does the same for the current visit.
 
@@ -45,9 +47,20 @@ Changes you make in the widget are saved in `localStorage` under `foldkit-scan:s
 - label mode: `HotOnly`, `OnHover` or `Always`,
 - whether the pill is tucked away,
 - the open tab,
-- dismissed issues.
+- dismissed issues,
+- sound on or off.
 
 If you prefer reduced motion, flashes start at `Problems`. Blocked or broken storage falls back to the defaults.
+
+## Sound
+
+With sound on, foldkit-scan plays a short, soft chime when a new [issue](../issues/) appears or when a frame takes over 100 ms, which you feel as a stutter. You can keep clicking through your app and hear when something goes wrong, without watching the panel.
+
+Turn it on with the **♪** button in the panel header, or **Sound** in the Settings tab. Switching it on plays the chime once so you know what to listen for. It plays at most once a second, never on the first render, and nothing audio-related is created while it is off. The tone is made with the Web Audio API, so there is no sound file.
+
+To have it on from the start, pass `sound: true`.
+
+## Starting over
 
 To start over, clear the key:
 

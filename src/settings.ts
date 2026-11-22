@@ -25,6 +25,9 @@ export type Settings = Readonly<{
   dismissedIssues: ReadonlyArray<string>
   /** The one-time "switch to problems only?" offer was answered. */
   isFlashOfferAnswered: boolean
+  /** Chime on new issues and stutters. Missing until the toggle is used,
+   *  so the `sound` option decides until then. */
+  sound?: boolean
 }>
 
 // The schema mirrors the type above. `decodeSettings` returns `Settings`,
@@ -37,6 +40,8 @@ const SettingsSchema = Schema.Struct({
   tab: Schema.Literals(['Frames', 'Issues', 'Hotspots', 'Settings']),
   dismissedIssues: Schema.Array(Schema.String),
   isFlashOfferAnswered: Schema.Boolean,
+  // Optional so settings saved before it existed still load.
+  sound: Schema.optionalKey(Schema.Boolean),
 })
 
 const STORAGE_KEY = 'foldkit-scan:settings'

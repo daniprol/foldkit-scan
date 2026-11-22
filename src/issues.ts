@@ -43,6 +43,8 @@ export const makeIssueTracker = (
     now?: () => number
     dismissed?: ReadonlyArray<string>
     onChange?: () => void
+    /** Called once when an issue is first raised. */
+    onNew?: (issue: Issue) => void
   }> = {},
 ): IssueTracker => {
   const now = options.now ?? (() => performance.now())
@@ -71,8 +73,15 @@ export const makeIssueTracker = (
       })
       options.onChange?.()
     } else if (times.length >= REPEATS_NEEDED && !dismissed.has(id)) {
-      issues.set(id, { id, ...sighting, count: times.length, lastSeenAt: at })
+      const issue: Issue = {
+        id,
+        ...sighting,
+        count: times.length,
+        lastSeenAt: at,
+      }
+      issues.set(id, issue)
       options.onChange?.()
+      options.onNew?.(issue)
     }
   }
 

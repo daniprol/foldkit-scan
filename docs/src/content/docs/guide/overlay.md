@@ -50,7 +50,7 @@ Cycle flash modes with <kbd>Alt</kbd>+<kbd>Shift</kbd>+<kbd>F</kbd>: **All**, **
 - **Frames**: a timeline of recent frames against the 16.7 ms line. Pick one to see its Messages (did each change the Model? how long did `update` take?) and its DOM changes. Wasted frames and DevTools replays are tagged. <kbd>←</kbd> <kbd>→</kbd> step through frames, <kbd>Alt</kbd>+<kbd>Shift</kbd>+<kbd>P</kbd> pauses. Each Message has an **ignore** button for noisy ticks. With [`scan.resources`](../commands/), a Commands lane shows what each frame started.
 - **Issues**: things worth fixing, each with a hint. See [Issues](../issues/).
 - **Hotspots**: the most patched views and busiest Messages over the last 5 s, plus hit rates for [lazy slots](../lazy/).
-- **Settings**: corner, flash mode, label mode, reset stats, and the keyboard shortcuts.
+- **Settings**: corner, flash mode, label mode, [sound](../settings/#sound), reset stats, and the keyboard shortcuts.
 
 ## Inspect mode
 

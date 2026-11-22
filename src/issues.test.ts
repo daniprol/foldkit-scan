@@ -27,6 +27,20 @@ const churn = (count: number): ReadonlyArray<DomChange> =>
   }))
 
 describe('issue tracker', () => {
+  test('calls onNew once, when an issue is first raised', () => {
+    let time = 0
+    const raised: Array<string> = []
+    const tracker = makeIssueTracker({
+      now: () => time,
+      onNew: issue => raised.push(issue.kind),
+    })
+    for (const at of [0, 1000, 2000]) {
+      time = at
+      tracker.observeFrame(frame({ changes: churn(3) }))
+    }
+    expect(raised).toEqual(['KeyedChurn'])
+  })
+
   test('raises an issue only when it repeats', () => {
     let time = 0
     const tracker = makeIssueTracker({ now: () => time })

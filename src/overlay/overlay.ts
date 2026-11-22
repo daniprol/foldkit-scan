@@ -50,6 +50,9 @@ export type OverlayInput = Readonly<{
   labelFor: (node: Node) => string
   settings: () => Settings
   updateSettings: (patch: Partial<Settings>) => void
+  isSoundOn: () => boolean
+  /** Plays the chime once, as a sample when sound is switched on. */
+  playChime: () => void
   ignoreMessage: (tag: string) => void
 }>
 
@@ -205,6 +208,14 @@ export const makeOverlay = (input: OverlayInput): Overlay => {
       updateSettings({ corner })
       refresh()
     },
+    setSound: isOn => {
+      updateSettings({ sound: isOn })
+      // The click is the user gesture browsers need before audio can play,
+      // and it shows what the chime sounds like.
+      if (isOn) input.playChime()
+      showToast(isOn ? 'Sound: on' : 'Sound: off')
+      refresh()
+    },
     toggleInspect: () =>
       inspector.isActive() ? inspector.stop() : inspector.start(),
     togglePause: () => {
@@ -281,6 +292,7 @@ export const makeOverlay = (input: OverlayInput): Overlay => {
     commands: input.commands.recent(),
     commandsByName: input.commands.byName(),
     isDevToolsLinked: input.devTools.isLinked(),
+    isSoundOn: input.isSoundOn(),
   })
 
   let refreshTimer = 0
