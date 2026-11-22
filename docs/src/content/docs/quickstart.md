@@ -65,6 +65,10 @@ Remove the widget before Vite swaps in new code:
 import.meta.hot?.dispose(() => scan.dispose())
 ```
 
+## Commands
+
+To see Commands in the panel, pass `resources: scan.resources` too. See [Commands and tracing](../guide/commands/).
+
 ## Lazy views
 
 To see hits and misses for a lazy view, wrap its slot. See [Lazy views](../guide/lazy/).

@@ -36,6 +36,8 @@ export type PanelData = Readonly<{
   commandsByName: ReadonlyArray<Hotspot>
   /** `true` when the experimental DevTools link found the DevTools store. */
   isDevToolsLinked: boolean
+  /** Chime on new issues and stutters. */
+  isSoundOn: boolean
 }>
 
 export type PanelActions = Readonly<{
@@ -44,6 +46,7 @@ export type PanelActions = Readonly<{
   setFlashes: (mode: FlashMode) => void
   setLabels: (mode: LabelMode) => void
   setCorner: (corner: Corner) => void
+  setSound: (isOn: boolean) => void
   toggleInspect: () => void
   togglePause: () => void
   close: () => void
@@ -578,6 +581,20 @@ const settingsTab = (
       data.settings.labels,
       actions.setLabels,
     ),
+    el('span', { text: 'Sound' }),
+    segmented(
+      'sound',
+      [
+        ['On', 'On'],
+        ['Off', 'Off'],
+      ],
+      data.isSoundOn ? 'On' : 'Off',
+      choice => actions.setSound(choice === 'On'),
+    ),
+    el('span'),
+    el('span', {
+      text: 'A short chime when a new issue appears or a frame takes over 100 ms.',
+    }),
     el('span', { text: 'Data' }),
     el('div', {}, [
       el('button', {
@@ -667,6 +684,19 @@ export const renderPanel = (
             'data-key': 'inspect',
           },
           on: { click: actions.toggleInspect },
+        }),
+        el('button', {
+          class: 'icon',
+          text: '♪',
+          title: data.isSoundOn
+            ? 'Sound on: chime on new issues and stutters'
+            : 'Sound off',
+          attrs: {
+            'aria-label': 'Sound',
+            'aria-pressed': String(data.isSoundOn),
+            'data-key': 'sound',
+          },
+          on: { click: () => actions.setSound(!data.isSoundOn) },
         }),
         el('button', {
           class: 'icon',

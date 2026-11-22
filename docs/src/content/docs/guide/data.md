@@ -2,7 +2,7 @@
 title: Data and subscribe
 description: Read frames, issues and reports from code, tests and agents.
 sidebar:
-  order: 5
+  order: 6
 ---
 
 Everything the overlay shows is plain data you can read yourself.
@@ -30,14 +30,15 @@ DevTools replays come through too, with `isReplay: true`.
 scan.frames() // recent FrameRecords, oldest first (120 by default)
 scan.issues() // current Issues
 scan.lazyStats() // one LazyStat per wrapped slot
+scan.commands() // recent Commands, needs scan.resources
 scan.report() // all of it as a serialisable Report
 ```
 
 ## report
 
-`scan.report()` returns a [`Report`](../../api/type-aliases/report/): frames, hotspots, lazy stats and issues, without DOM elements, so it survives `JSON.stringify`.
+`scan.report()` returns a [`Report`](../../api/type-aliases/report/): frames, hotspots, lazy stats, issues and Commands, without DOM elements, so it survives `JSON.stringify`.
 
-It's also on `window`, for Playwright, Chrome DevTools or an AI agent driving a browser:
+The [Vite plugin](../tools/) serves it at `/__foldkit-scan/report`. It's also on `window`, for Playwright, Chrome DevTools or an AI agent driving a browser:
 
 ```ts
 const json = await page.evaluate(() =>

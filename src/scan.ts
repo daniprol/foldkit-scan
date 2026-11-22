@@ -15,6 +15,7 @@ import { OVERLAY_HOST_ID, type Overlay, makeOverlay } from './overlay/overlay'
 import { makePerformanceTrack } from './performanceTrack'
 import { type Settings, loadSettings, saveSettings } from './settings'
 import { makeSlowConfig } from './slow'
+import { STUTTER_MS, makeChime } from './sound'
 import type {
   CommandRecord,
   FrameRecord,
@@ -51,6 +52,10 @@ export type ScanOptions = Readonly<{
   /** A Tracer you already use, for example to send spans to OpenTelemetry.
    *  `scan.resources` passes every span on to it. */
   tracer?: Tracer.Tracer
+  /** Play a short chime when a new issue appears or a frame stutters (over
+   *  100 ms). Sets the starting value of the panel's sound toggle, which
+   *  wins once you use it. Defaults to `false`. */
+  sound?: boolean
 }>
 
 type View<Model, Message> = (model: Model, h: HtmlBuilder<Message>) => Document
@@ -139,9 +144,12 @@ export const make = <Model, Message>(
 
   const identities = makeIdentities()
   const hotspots = makeHotspots()
+  const isSoundOn = (): boolean => settings.sound ?? options.sound ?? false
+  const chime = makeChime(isSoundOn)
   const issues = makeIssueTracker({
     dismissed: settings.dismissedIssues,
     onChange: () => overlay?.refresh(),
+    onNew: chime.notify,
   })
   const lazy = makeLazyTracker(issues.observeUnstableLazy)
   const commands = makeCommandTracker()
@@ -227,6 +235,8 @@ export const make = <Model, Message>(
           labelFor: identities.labelFor,
           settings: () => settings,
           updateSettings,
+          isSoundOn,
+          playChime: chime.play,
           ignoreMessage: tag => {
             ignoredAtRuntime.add(tag)
           },
@@ -235,6 +245,11 @@ export const make = <Model, Message>(
   const stopObserving = frames.subscribe(frame => {
     hotspots.observeFrame(frame)
     issues.observeFrame(frame)
+    // Skip the first render and replays: only a Message the user caused
+    // counts as a stutter.
+    if (frame.totalMs > STUTTER_MS && frame.messages.length > 0) {
+      chime.notify()
+    }
   })
   const stopTracking = commands.subscribe(command => {
     track?.command(command)
@@ -304,6 +319,7 @@ export const make = <Model, Message>(
     report,
     dispose: () => {
       stopObserving()
+      chime.dispose()
       stopTracking()
       domWatcher?.dispose()
       overlay?.dispose()
